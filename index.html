@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Random Team Picker</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#efefef;
+color:#1f2937;
+}
+
+.page{
+max-width:1440px;
+margin:auto;
+padding:32px;
+}
+
+.editor{
+background:white;
+padding:20px;
+border-radius:16px;
+margin-bottom:25px;
+box-shadow:0 6px 20px rgba(0,0,0,.08);
+}
+
+textarea{
+width:100%;
+height:130px;
+font-size:18px;
+padding:12px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+.update-btn{
+margin-top:10px;
+padding:10px 20px;
+font-size:16px;
+border:none;
+background:#2563eb;
+color:white;
+border-radius:8px;
+cursor:pointer;
+}
+
+.toolbar{
+display:flex;
+justify-content:center;
+gap:16px;
+margin-bottom:28px;
+}
+
+.btn{
+border:0;
+border-radius:14px;
+padding:14px 28px;
+font-size:20px;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn-start{background:#16a34a;color:#fff}
+.btn-stop{background:#dc2626;color:#fff}
+
+.btn:disabled{
+opacity:.45;
+cursor:not-allowed;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(2,minmax(320px,1fr));
+gap:28px;
+}
+
+.team-card{
+background:#fff;
+border-radius:28px;
+overflow:hidden;
+border:5px solid transparent;
+box-shadow:0 8px 24px rgba(0,0,0,.06);
+}
+
+.team-card.team-a{border-color:#0f8acb}
+.team-card.team-b{border-color:#e32986}
+
+.team-header{
+height:200px;
+padding:28px 30px;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+color:#fff;
+}
+
+.team-a .team-header{background:#0f8acb}
+.team-b .team-header{background:#e32986}
+
+.team-badge{
+width:72px;
+height:72px;
+border-radius:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:42px;
+font-weight:800;
+background:rgba(0,0,0,.2);
+}
+
+.team-title{
+font-size:42px;
+font-weight:800;
+margin:0 0 10px;
+}
+
+.team-count{
+font-size:28px;
+}
+
+.random-box{
+width:72px;
+height:72px;
+border-radius:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:14px;
+font-weight:700;
+background:rgba(255,255,255,.3);
+}
+
+.random-box.spinning{
+animation:pulseBox .45s infinite alternate;
+}
+
+@keyframes pulseBox{
+from{transform:scale(1)}
+to{transform:scale(1.08)}
+}
+
+.team-body{
+padding:40px;
+}
+
+.member-list{
+list-style:none;
+padding:0;
+margin:0;
+}
+
+.member-item{
+display:flex;
+align-items:center;
+gap:26px;
+border-bottom:2px solid #e5e7eb;
+padding:12px 0;
+}
+
+.member-index{
+width:40px;
+height:40px;
+border-radius:999px;
+background:#f3f4f6;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+font-weight:700;
+}
+
+.member-name{
+font-size:24px;
+}
+
+.lane{
+margin-left:auto;
+font-size:20px;
+color:#6b7280;
+font-weight:600;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<div class="editor">
+
+<h3>แก้ไขรายชื่อผู้เล่น (10 คน)</h3>
+
+<textarea id="playerInput"></textarea>
+
+<button class="update-btn" onclick="updatePlayers()">
+อัปเดตรายชื่อ
+</button>
+
+</div>
+
+
+<div class="toolbar">
+<button id="startBtn" class="btn btn-start">สุ่ม</button>
+<button id="stopBtn" class="btn btn-stop" disabled>หยุด</button>
+</div>
+
+
+<div class="cards">
+
+<div class="team-card team-a">
+
+<div class="team-header">
+
+<div>
+<div class="team-badge">A</div>
+<h2 class="team-title">กลุ่ม A</h2>
+<div class="team-count" id="countA"></div>
+</div>
+
+<div class="random-box" id="randomBoxA">พร้อม</div>
+
+</div>
+
+<div class="team-body">
+<ul class="member-list" id="listA"></ul>
+</div>
+
+</div>
+
+
+
+<div class="team-card team-b">
+
+<div class="team-header">
+
+<div>
+<div class="team-badge">B</div>
+<h2 class="team-title">กลุ่ม B</h2>
+<div class="team-count" id="countB"></div>
+</div>
+
+<div class="random-box" id="randomBoxB">พร้อม</div>
+
+</div>
+
+<div class="team-body">
+<ul class="member-list" id="listB"></ul>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const lanes=["กลาง","โรม","ป่า","ออฟ","แครี่"];
+
+let originalNames=[
+"N'Charlie Brown",
+"TU POB THOI2",
+"Moonshiit-e",
+"E4ZY",
+"jit am nuay",
+"Kryon",
+"Moonshadow",
+"Chalhong",
+"Aisee nonna",
+"iiTuMii"
+];
+
+const state={
+isRunning:false,
+intervalId:null,
+currentPool:[...originalNames],
+teamA:[],
+teamB:[]
+};
+
+const listA=document.getElementById("listA");
+const listB=document.getElementById("listB");
+const countA=document.getElementById("countA");
+const countB=document.getElementById("countB");
+
+const randomBoxA=document.getElementById("randomBoxA");
+const randomBoxB=document.getElementById("randomBoxB");
+
+const startBtn=document.getElementById("startBtn");
+const stopBtn=document.getElementById("stopBtn");
+
+
+document.getElementById("playerInput").value =
+originalNames.join("\n");
+
+
+function shuffle(array){
+
+const arr=[...array];
+
+for(let i=arr.length-1;i>0;i--){
+
+const j=Math.floor(Math.random()*(i+1));
+
+[arr[i],arr[j]]=[arr[j],arr[i]];
+
+}
+
+return arr;
+
+}
+
+
+function splitTeams(names){
+
+const shuffled=shuffle(names);
+
+return{
+teamA:shuffled.slice(0,5),
+teamB:shuffled.slice(5)
+};
+
+}
+
+
+function assignLane(team){
+
+const laneShuffle=shuffle(lanes);
+
+return team.map((player,i)=>{
+
+return{
+name:player,
+lane:laneShuffle[i]
+};
+
+});
+
+}
+
+
+function createMemberItem(player,index){
+
+return`
+<li class="member-item">
+<div class="member-index">${index+1}</div>
+<div class="member-name">${player.name}</div>
+<div class="lane">${player.lane}</div>
+</li>
+`;
+
+}
+
+
+function renderTeam(listElement,members){
+
+listElement.innerHTML=
+members.map(createMemberItem).join("");
+
+}
+
+
+function renderAll(){
+
+renderTeam(listA,state.teamA);
+renderTeam(listB,state.teamB);
+
+countA.textContent=`${state.teamA.length} คน`;
+countB.textContent=`${state.teamB.length} คน`;
+
+}
+
+
+function setRunningUI(isRunning){
+
+startBtn.disabled=isRunning;
+stopBtn.disabled=!isRunning;
+
+randomBoxA.classList.toggle("spinning",isRunning);
+randomBoxB.classList.toggle("spinning",isRunning);
+
+if(isRunning){
+
+randomBoxA.textContent="สุ่ม...";
+randomBoxB.textContent="สุ่ม...";
+
+}else{
+
+randomBoxA.textContent="หยุด";
+randomBoxB.textContent="หยุด";
+
+}
+
+}
+
+
+function spinOnce(){
+
+const {teamA,teamB}=splitTeams(state.currentPool);
+
+state.teamA=assignLane(teamA);
+state.teamB=assignLane(teamB);
+
+renderAll();
+
+}
+
+
+function startRandom(){
+
+if(state.isRunning)return;
+
+state.isRunning=true;
+
+setRunningUI(true);
+
+spinOnce();
+
+state.intervalId=setInterval(spinOnce,120);
+
+}
+
+
+function stopRandom(){
+
+if(!state.isRunning)return;
+
+state.isRunning=false;
+
+clearInterval(state.intervalId);
+
+setRunningUI(false);
+
+}
+
+
+function updatePlayers(){
+
+const text=document.getElementById("playerInput").value;
+
+const names=text
+.split("\n")
+.map(n=>n.trim())
+.filter(n=>n!=="");
+
+if(names.length!==10){
+
+alert("ต้องมีผู้เล่น 10 คน");
+
+return;
+
+}
+
+state.currentPool=names;
+
+spinOnce();
+
+}
+
+
+startBtn.addEventListener("click",startRandom);
+stopBtn.addEventListener("click",stopRandom);
+
+spinOnce();
+
+</script>
+
+</body>
+</html>
