@@ -1,477 +1,1035 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Random Team Picker</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Team Picker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<style>
+    <style>
+        * {
+            box-sizing: border-box
+        }
 
-*{box-sizing:border-box}
+        body {
+            margin: 0;
+            font-family: 'Kanit', Arial, Helvetica, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+        }
 
-body{
-margin:0;
-font-family:Arial,Helvetica,sans-serif;
-background:#efefef;
-color:#1f2937;
-}
+        .page {
+            max-width: 1440px;
+            margin: auto;
+            padding: 32px;
+        }
 
-.page{
-max-width:1440px;
-margin:auto;
-padding:32px;
-}
+        .editor {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+        }
 
-.editor{
-background:white;
-padding:20px;
-border-radius:16px;
-margin-bottom:25px;
-box-shadow:0 6px 20px rgba(0,0,0,.08);
-}
+        textarea {
+            width: 100%;
+            height: 130px;
+            font-size: 18px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
 
-textarea{
-width:100%;
-height:130px;
-font-size:18px;
-padding:12px;
-border-radius:10px;
-border:1px solid #ccc;
-}
+        .update-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
 
-.update-btn{
-margin-top:10px;
-padding:10px 20px;
-font-size:16px;
-border:none;
-background:#2563eb;
-color:white;
-border-radius:8px;
-cursor:pointer;
-}
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
 
-.toolbar{
-display:flex;
-justify-content:center;
-gap:16px;
-margin-bottom:28px;
-}
+        .btn {
+            border: 0;
+            border-radius: 14px;
+            padding: 14px 28px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+        }
 
-.btn{
-border:0;
-border-radius:14px;
-padding:14px 28px;
-font-size:20px;
-font-weight:700;
-cursor:pointer;
-}
+        .btn-start {
+            background: #16a34a;
+            color: #fff
+        }
 
-.btn-start{background:#16a34a;color:#fff}
-.btn-stop{background:#dc2626;color:#fff}
+        .btn-stop {
+            background: #dc2626;
+            color: #fff
+        }
 
-.btn:disabled{
-opacity:.45;
-cursor:not-allowed;
-}
+        .btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
 
-.cards{
-display:grid;
-grid-template-columns:repeat(2,minmax(320px,1fr));
-gap:28px;
-}
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(320px, 1fr));
+            gap: 28px;
+        }
 
-.team-card{
-background:#fff;
-border-radius:28px;
-overflow:hidden;
-border:5px solid transparent;
-box-shadow:0 8px 24px rgba(0,0,0,.06);
-}
+        .team-card {
+            background: #fff;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 5px solid transparent;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+        }
 
-.team-card.team-a{border-color:#0f8acb}
-.team-card.team-b{border-color:#e32986}
+        .team-card.team-a {
+            border-color: #0f8acb
+        }
 
-.team-header{
-height:200px;
-padding:28px 30px;
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-color:#fff;
-}
+        .team-card.team-b {
+            border-color: #e32986
+        }
 
-.team-a .team-header{background:#0f8acb}
-.team-b .team-header{background:#e32986}
+        .team-header {
+            height: 200px;
+            padding: 28px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            color: #fff;
+        }
 
-.team-badge{
-width:72px;
-height:72px;
-border-radius:18px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:42px;
-font-weight:800;
-background:rgba(0,0,0,.2);
-}
+        .team-a .team-header {
+            background: #0f8acb
+        }
 
-.team-title{
-font-size:42px;
-font-weight:800;
-margin:0 0 10px;
-}
+        .team-b .team-header {
+            background: #e32986
+        }
 
-.team-count{
-font-size:28px;
-}
+        .team-badge {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 800;
+            background: rgba(0, 0, 0, .2);
+        }
 
-.random-box{
-width:72px;
-height:72px;
-border-radius:18px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:14px;
-font-weight:700;
-background:rgba(255,255,255,.3);
-}
+        .team-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0 0 0px;
+        }
 
-.random-box.spinning{
-animation:pulseBox .45s infinite alternate;
-}
+        .team-count {
+            font-size: 23px;
+        }
 
-@keyframes pulseBox{
-from{transform:scale(1)}
-to{transform:scale(1.08)}
-}
+        .random-box {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, .3);
+        }
 
-.team-body{
-padding:40px;
-}
+        .random-box.spinning {
+            animation: pulseBox .45s infinite alternate;
+        }
 
-.member-list{
-list-style:none;
-padding:0;
-margin:0;
-}
+        @keyframes pulseBox {
+            from {
+                transform: scale(1)
+            }
 
-.member-item{
-display:flex;
-align-items:center;
-gap:26px;
-border-bottom:2px solid #e5e7eb;
-padding:12px 0;
-}
+            to {
+                transform: scale(1.08)
+            }
+        }
 
-.member-index{
-width:40px;
-height:40px;
-border-radius:999px;
-background:#f3f4f6;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:22px;
-font-weight:700;
-}
+        .team-body {
+            padding: 40px;
+        }
 
-.member-name{
-font-size:24px;
-}
+        .member-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.lane{
-margin-left:auto;
-font-size:20px;
-color:#6b7280;
-font-weight:600;
-}
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+            border-bottom: 2px solid #e5e7eb;
+            padding: 12px 0;
+        }
 
-</style>
+        .member-index {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .member-name {
+            font-size: 24px;
+        }
+
+        .lane {
+            margin-left: auto;
+            font-size: 20px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .player-selection-container {
+            margin-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+        .player-selection-container h4 {
+            margin: 0 0 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #selectedCountDisplay {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        #selectedCountDisplay.warning {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .player-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .player-label:hover:not(.disabled) {
+            border-color: #93c5fd;
+            background: #f0f7ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.08);
+        }
+
+        .player-label.selected {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+        }
+
+        .player-label.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            border-color: #e5e7eb;
+            color: #9ca3af;
+        }
+
+        .player-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            display: grid;
+            place-content: center;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .player-checkbox:checked {
+            border-color: #3b82f6;
+            background-color: #3b82f6;
+        }
+
+        .player-checkbox:checked::before {
+            content: "";
+            width: 8px;
+            height: 4px;
+            border-left: 2px solid white;
+            border-bottom: 2px solid white;
+            transform: rotate(-45deg) translate(1px, -1px);
+        }
+
+        .player-checkbox:disabled {
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+            background-color: #f1f5f9;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-share:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-share:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 650px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #1f2937;
+        }
+
+        .image-preview-container {
+            border: 2px dashed #e5e7eb;
+            border-radius: 16px;
+            padding: 10px;
+            background: #f9fafb;
+            margin-bottom: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        #shareImagePreview {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-share-action {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-share-action:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        .btn-download-action {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-download-action:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-close-action {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-close-action:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Spinner Animation */
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="page">
+    <div class="page">
 
-<div class="editor">
+        <div class="editor">
 
-<h3>แก้ไขรายชื่อผู้เล่น (10 คน)</h3>
+            <h3>แก้ไขรายชื่อผู้เล่นทั้งหมด</h3>
 
-<textarea id="playerInput"></textarea>
+            <textarea id="playerInput"></textarea>
 
-<button class="update-btn" onclick="updatePlayers()">
-อัปเดตรายชื่อ
-</button>
+            <button class="update-btn" onclick="updatePlayers()">
+                อัปเดตรายชื่อ
+            </button>
 
-</div>
+            <div class="player-selection-container">
+                <h4>เลือกผู้เล่นเข้าร่วมการสุ่ม (เลือก 10 คน): <span id="selectedCountDisplay">10 / 10</span></h4>
+                <div id="checkboxContainer" class="checkbox-grid"></div>
+            </div>
 
-
-<div class="toolbar">
-<button id="startBtn" class="btn btn-start">สุ่ม</button>
-<button id="stopBtn" class="btn btn-stop" disabled>หยุด</button>
-</div>
-
-
-<div class="cards">
-
-<div class="team-card team-a">
-
-<div class="team-header">
-
-<div>
-<div class="team-badge">A</div>
-<h2 class="team-title">กลุ่ม A</h2>
-<div class="team-count" id="countA"></div>
-</div>
-
-<div class="random-box" id="randomBoxA">พร้อม</div>
-
-</div>
-
-<div class="team-body">
-<ul class="member-list" id="listA"></ul>
-</div>
-
-</div>
+        </div>
 
 
-
-<div class="team-card team-b">
-
-<div class="team-header">
-
-<div>
-<div class="team-badge">B</div>
-<h2 class="team-title">กลุ่ม B</h2>
-<div class="team-count" id="countB"></div>
-</div>
-
-<div class="random-box" id="randomBoxB">พร้อม</div>
-
-</div>
-
-<div class="team-body">
-<ul class="member-list" id="listB"></ul>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-const lanes=["กลาง","โรม","ป่า","ออฟ","แครี่"];
-
-let originalNames=[
-"O V U L E",
-"TU POB THOI2",
-"Moonshiit-e",
-"S P E R M",
-"jit am nuay",
-"ปยออ55",
-"Moonshadow",
-"Chalhong",
-"THOI2 POB TU",
-"iiTuMii"
-];
-
-const state={
-isRunning:false,
-intervalId:null,
-currentPool:[...originalNames],
-teamA:[],
-teamB:[]
-};
-
-const listA=document.getElementById("listA");
-const listB=document.getElementById("listB");
-const countA=document.getElementById("countA");
-const countB=document.getElementById("countB");
-
-const randomBoxA=document.getElementById("randomBoxA");
-const randomBoxB=document.getElementById("randomBoxB");
-
-const startBtn=document.getElementById("startBtn");
-const stopBtn=document.getElementById("stopBtn");
+        <div class="toolbar">
+            <button id="startBtn" class="btn btn-start">สุ่ม</button>
+            <button id="stopBtn" class="btn btn-stop" disabled>หยุด</button>
+            <button id="shareBtn" class="btn btn-share">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>แชร์ผลลัพธ์</span>
+            </button>
+        </div>
 
 
-document.getElementById("playerInput").value =
-originalNames.join("\n");
+        <div class="cards">
+
+            <div class="team-card team-a">
+
+                <div class="team-header">
+
+                    <div>
+                        <div class="team-badge">A</div>
+                        <h2 class="team-title">กลุ่ม A</h2>
+                        <div class="team-count" id="countA"></div>
+                    </div>
+
+                    <div class="random-box" id="randomBoxA">พร้อม</div>
+
+                </div>
+
+                <div class="team-body">
+                    <ul class="member-list" id="listA"></ul>
+                </div>
+
+            </div>
 
 
-function shuffle(array){
 
-const arr=[...array];
+            <div class="team-card team-b">
 
-for(let i=arr.length-1;i>0;i--){
+                <div class="team-header">
 
-const j=Math.floor(Math.random()*(i+1));
+                    <div>
+                        <div class="team-badge">B</div>
+                        <h2 class="team-title">กลุ่ม B</h2>
+                        <div class="team-count" id="countB"></div>
+                    </div>
 
-[arr[i],arr[j]]=[arr[j],arr[i]];
+                    <div class="random-box" id="randomBoxB">พร้อม</div>
 
-}
+                </div>
 
-return arr;
+                <div class="team-body">
+                    <ul class="member-list" id="listB"></ul>
+                </div>
 
-}
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Share Modal Overlay -->
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>แชร์ผลการสุ่มทีม</h3>
+            <div class="image-preview-container">
+                <img id="shareImagePreview" src="" alt="ผลการสุ่มทีม" />
+            </div>
+            <div class="modal-buttons">
+                <button id="modalShareBtn" class="modal-btn btn-share-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>ส่งต่อ / แชร์</span>
+                </button>
+                <a id="modalDownloadBtn" href="#" download="random-team.png" class="modal-btn btn-download-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>ดาวน์โหลด</span>
+                </a>
+                <button onclick="closeShareModal()" class="modal-btn btn-close-action">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const lanes = ["กลาง", "โรม", "ป่า", "ออฟ", "แครี่"];
+
+        let originalNames = [
+            "jaja",
+            "พี่ตง",
+            "พี่มังกร",
+            "jimmy",
+            "P'Nutty",
+            "Beer",
+            "Moonshadow",
+            "P'Bas",
+            "พี่สี",
+            "iiTumii",
+            "Zansan",
+            "พ่อ",
+            "Kryon",
+            "t t"
+        ];
+
+        let allNames = [...originalNames];
+        let selectedNames = new Set(allNames.slice(0, 10));
+
+        const state = {
+            isRunning: false,
+            intervalId: null,
+            currentPool: Array.from(selectedNames),
+            teamA: [],
+            teamB: []
+        };
+
+        const listA = document.getElementById("listA");
+        const listB = document.getElementById("listB");
+        const countA = document.getElementById("countA");
+        const countB = document.getElementById("countB");
+
+        const randomBoxA = document.getElementById("randomBoxA");
+        const randomBoxB = document.getElementById("randomBoxB");
+
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const checkboxContainer = document.getElementById("checkboxContainer");
 
 
-function splitTeams(names){
+        document.getElementById("playerInput").value =
+            originalNames.join("\n");
 
-const shuffled=shuffle(names);
+        function renderCheckboxes() {
+            checkboxContainer.innerHTML = "";
 
-return{
-teamA:shuffled.slice(0,5),
-teamB:shuffled.slice(5)
-};
+            allNames.forEach((name) => {
+                const label = document.createElement("label");
+                label.className = "player-label";
+                if (selectedNames.has(name)) {
+                    label.classList.add("selected");
+                }
 
-}
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = name;
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.className = "player-checkbox";
+                checkbox.checked = selectedNames.has(name);
+                checkbox.disabled = !checkbox.checked && selectedNames.size >= 10;
+
+                if (checkbox.disabled) {
+                    label.classList.add("disabled");
+                }
+
+                checkbox.addEventListener("change", (e) => {
+                    if (e.target.checked) {
+                        if (selectedNames.size < 10) {
+                            selectedNames.add(name);
+                        } else {
+                            e.target.checked = false;
+                            return;
+                        }
+                    } else {
+                        selectedNames.delete(name);
+                    }
+
+                    label.classList.toggle("selected", checkbox.checked);
+                    state.currentPool = Array.from(selectedNames);
+                    updateCheckboxStates();
+
+                    if (selectedNames.size === 10) {
+                        spinOnce();
+                    }
+                });
+
+                label.appendChild(nameSpan);
+                label.appendChild(checkbox);
+                checkboxContainer.appendChild(label);
+            });
+
+            updateCheckboxStates();
+        }
+
+        function updateCheckboxStates() {
+            const countDisplay = document.getElementById("selectedCountDisplay");
+            const checkedCount = selectedNames.size;
+
+            countDisplay.textContent = `${checkedCount} / 10`;
+
+            if (checkedCount !== 10) {
+                countDisplay.classList.add("warning");
+            } else {
+                countDisplay.classList.remove("warning");
+            }
+
+            const labels = checkboxContainer.querySelectorAll(".player-label");
+            labels.forEach(label => {
+                const checkbox = label.querySelector(".player-checkbox");
+                const isChecked = checkbox.checked;
+
+                if (!isChecked && checkedCount >= 10) {
+                    checkbox.disabled = true;
+                    label.classList.add("disabled");
+                } else {
+                    checkbox.disabled = false;
+                    label.classList.remove("disabled");
+                }
+            });
+
+            startBtn.disabled = state.isRunning || (checkedCount !== 10);
+        }
 
 
-function assignLane(team){
+        function shuffle(array) {
 
-const laneShuffle=shuffle(lanes);
+            const arr = [...array];
 
-return team.map((player,i)=>{
+            for (let i = arr.length - 1; i > 0; i--) {
 
-return{
-name:player,
-lane:laneShuffle[i]
-};
+                const j = Math.floor(Math.random() * (i + 1));
 
-});
+                [arr[i], arr[j]] = [arr[j], arr[i]];
 
-}
+            }
+
+            return arr;
+
+        }
 
 
-function createMemberItem(player,index){
+        function splitTeams(names) {
 
-return`
+            const shuffled = shuffle(names);
+
+            return {
+                teamA: shuffled.slice(0, 5),
+                teamB: shuffled.slice(5)
+            };
+
+        }
+
+
+        function assignLane(team) {
+
+            const laneShuffle = shuffle(lanes);
+
+            return team.map((player, i) => {
+
+                return {
+                    name: player,
+                    lane: laneShuffle[i]
+                };
+
+            });
+
+        }
+
+
+        function createMemberItem(player, index) {
+
+            return `
 <li class="member-item">
-<div class="member-index">${index+1}</div>
+<div class="member-index">${index + 1}</div>
 <div class="member-name">${player.name}</div>
 <div class="lane">${player.lane}</div>
 </li>
 `;
 
-}
+        }
 
 
-function renderTeam(listElement,members){
+        function renderTeam(listElement, members) {
 
-listElement.innerHTML=
-members.map(createMemberItem).join("");
+            listElement.innerHTML =
+                members.map(createMemberItem).join("");
 
-}
-
-
-function renderAll(){
-
-renderTeam(listA,state.teamA);
-renderTeam(listB,state.teamB);
-
-countA.textContent=`${state.teamA.length} คน`;
-countB.textContent=`${state.teamB.length} คน`;
-
-}
+        }
 
 
-function setRunningUI(isRunning){
+        function renderAll() {
 
-startBtn.disabled=isRunning;
-stopBtn.disabled=!isRunning;
+            renderTeam(listA, state.teamA);
+            renderTeam(listB, state.teamB);
 
-randomBoxA.classList.toggle("spinning",isRunning);
-randomBoxB.classList.toggle("spinning",isRunning);
+            countA.textContent = `${state.teamA.length} คน`;
+            countB.textContent = `${state.teamB.length} คน`;
 
-if(isRunning){
-
-randomBoxA.textContent="สุ่ม...";
-randomBoxB.textContent="สุ่ม...";
-
-}else{
-
-randomBoxA.textContent="หยุด";
-randomBoxB.textContent="หยุด";
-
-}
-
-}
+        }
 
 
-function spinOnce(){
+        function setRunningUI(isRunning) {
 
-const {teamA,teamB}=splitTeams(state.currentPool);
+            startBtn.disabled = isRunning || (selectedNames.size !== 10);
+            stopBtn.disabled = !isRunning;
 
-state.teamA=assignLane(teamA);
-state.teamB=assignLane(teamB);
+            const shareBtn = document.getElementById("shareBtn");
+            if (shareBtn) {
+                shareBtn.style.display = isRunning ? "none" : "inline-flex";
+                shareBtn.disabled = selectedNames.size !== 10;
+            }
 
-renderAll();
+            randomBoxA.classList.toggle("spinning", isRunning);
+            randomBoxB.classList.toggle("spinning", isRunning);
 
-}
+            if (isRunning) {
 
+                randomBoxA.textContent = "สุ่ม...";
+                randomBoxB.textContent = "สุ่ม...";
 
-function startRandom(){
+            } else {
 
-if(state.isRunning)return;
+                randomBoxA.textContent = "หยุด";
+                randomBoxB.textContent = "หยุด";
 
-state.isRunning=true;
+            }
 
-setRunningUI(true);
+            // Disable or enable checkbox inputs during random draw
+            const checkboxes = checkboxContainer.querySelectorAll(".player-checkbox");
+            checkboxes.forEach(cb => {
+                if (isRunning) {
+                    cb.disabled = true;
+                    cb.parentElement.classList.add("disabled");
+                } else {
+                    const checkedCount = selectedNames.size;
+                    const isChecked = cb.checked;
+                    cb.disabled = !isChecked && checkedCount >= 10;
+                    cb.parentElement.classList.toggle("disabled", cb.disabled);
+                }
+            });
 
-spinOnce();
-
-state.intervalId=setInterval(spinOnce,120);
-
-}
-
-
-function stopRandom(){
-
-if(!state.isRunning)return;
-
-state.isRunning=false;
-
-clearInterval(state.intervalId);
-
-setRunningUI(false);
-
-}
-
-
-function updatePlayers(){
-
-const text=document.getElementById("playerInput").value;
-
-const names=text
-.split("\n")
-.map(n=>n.trim())
-.filter(n=>n!=="");
-
-if(names.length!==10){
-
-alert("ต้องมีผู้เล่น 10 คน");
-
-return;
-
-}
-
-state.currentPool=names;
-
-spinOnce();
-
-}
+        }
 
 
-startBtn.addEventListener("click",startRandom);
-stopBtn.addEventListener("click",stopRandom);
+        function spinOnce() {
 
-spinOnce();
+            const { teamA, teamB } = splitTeams(state.currentPool);
 
-</script>
+            state.teamA = assignLane(teamA);
+            state.teamB = assignLane(teamB);
+
+            renderAll();
+
+        }
+
+
+        function startRandom() {
+
+            if (state.isRunning) return;
+
+            state.isRunning = true;
+
+            setRunningUI(true);
+
+            spinOnce();
+
+            state.intervalId = setInterval(spinOnce, 120);
+
+        }
+
+
+        function stopRandom() {
+
+            if (!state.isRunning) return;
+
+            state.isRunning = false;
+
+            clearInterval(state.intervalId);
+
+            setRunningUI(false);
+
+        }
+
+
+        function updatePlayers() {
+
+            const text = document.getElementById("playerInput").value;
+
+            const names = text
+                .split("\n")
+                .map(n => n.trim())
+                .filter(n => n !== "");
+
+            if (names.length < 10) {
+
+                alert("ต้องมีรายชื่อผู้เล่นอย่างน้อย 10 คน");
+
+                return;
+
+            }
+
+            allNames = names;
+
+            // Preserve existing selections if they are still in the new list
+            const newSelected = new Set();
+            for (let name of selectedNames) {
+                if (allNames.includes(name)) {
+                    newSelected.add(name);
+                }
+            }
+
+            // If we have fewer than 10 selected, add other names from allNames until we have 10
+            if (newSelected.size < 10) {
+                for (let name of allNames) {
+                    if (newSelected.size >= 10) break;
+                    newSelected.add(name);
+                }
+            }
+
+            // If we somehow have more than 10 selected (shouldn't happen but just in case), restrict to 10
+            if (newSelected.size > 10) {
+                const arr = Array.from(newSelected).slice(0, 10);
+                selectedNames = new Set(arr);
+            } else {
+                selectedNames = newSelected;
+            }
+
+            state.currentPool = Array.from(selectedNames);
+
+            renderCheckboxes();
+
+            spinOnce();
+
+        }
+
+
+        startBtn.addEventListener("click", startRandom);
+        stopBtn.addEventListener("click", stopRandom);
+
+        let generatedBlob = null;
+
+        function shareResult() {
+            if (state.isRunning || selectedNames.size !== 10) return;
+
+            const shareBtn = document.getElementById("shareBtn");
+            const originalText = shareBtn.innerHTML;
+            shareBtn.disabled = true;
+            shareBtn.innerHTML = `
+                <svg class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25" stroke="currentColor" stroke-width="2.5"></circle>
+                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.0434 16.4545" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
+                </svg>
+                <span>กำลังสร้างรูป...</span>
+            `;
+
+            setTimeout(() => {
+                const targetElement = document.querySelector(".cards");
+                
+                html2canvas(targetElement, {
+                    backgroundColor: "#f3f4f6",
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true
+                }).then(canvas => {
+                    const dataUrl = canvas.toDataURL("image/png");
+                    
+                    canvas.toBlob(blob => {
+                        generatedBlob = blob;
+                        
+                        const downloadBtn = document.getElementById("modalDownloadBtn");
+                        downloadBtn.href = dataUrl;
+                        downloadBtn.download = `random-team-${Date.now()}.png`;
+                        
+                        const previewImg = document.getElementById("shareImagePreview");
+                        previewImg.src = dataUrl;
+                        
+                        const modalShare = document.getElementById("modalShareBtn");
+                        modalShare.onclick = () => {
+                            const file = new File([generatedBlob], "random-team.png", { type: "image/png" });
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                navigator.share({
+                                    files: [file],
+                                    title: "ผลการจัดทีม",
+                                    text: "ผลการสุ่มแบ่งทีมและตำแหน่งเลนจาก Random Team Picker"
+                                }).catch(err => console.log("Error sharing file:", err));
+                            } else if (navigator.share) {
+                                navigator.share({
+                                    title: "ผลการจัดทีม",
+                                    text: "ผลการสุ่มแบ่งทีมและตำแหน่งเลนจาก Random Team Picker"
+                                }).catch(err => console.log("Error sharing text:", err));
+                            } else {
+                                alert("เบราว์เซอร์นี้ไม่รองรับการแชร์โดยตรง กรุณาดาวน์โหลดรูปภาพไปแชร์ด้วยตนเอง");
+                            }
+                        };
+                        
+                        shareBtn.disabled = false;
+                        shareBtn.innerHTML = originalText;
+                        
+                        const modal = document.getElementById("shareModal");
+                        modal.style.display = "flex";
+                        setTimeout(() => modal.classList.add("show"), 10);
+                        
+                    }, "image/png");
+                }).catch(err => {
+                    console.error("Error generating canvas:", err);
+                    alert("ไม่สามารถสร้างรูปภาพได้ กรุณาลองใหม่อีกครั้ง");
+                    shareBtn.disabled = false;
+                    shareBtn.innerHTML = originalText;
+                });
+            }, 100);
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById("shareModal");
+            modal.classList.remove("show");
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 300);
+        }
+
+        document.getElementById("shareModal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeShareModal();
+            }
+        });
+
+        const shareBtn = document.getElementById("shareBtn");
+        shareBtn.addEventListener("click", shareResult);
+
+        renderCheckboxes();
+        spinOnce();
+
+    </script>
 
 </body>
+
 </html>
